@@ -1,11 +1,11 @@
 # GPU-Performance
 Login Steps:
 Terminal
-  ssh username@zeus.cs.txstate.edu
+	ssh username@zeus.cs.txstate.edu
   Enter Password
   ssh username@ada.cs.txstate.edu
   Enter Password
-    Linux commands: 
+		Linux commands: 
     ls
     mkdir folderName
     cd folderName
