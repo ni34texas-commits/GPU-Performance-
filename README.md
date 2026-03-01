@@ -16,8 +16,6 @@ Enter Password
 	...
 	Open a new terminal and install Ollama on Mac/Windows: 
 	MAC ->  brew install ollama
-	Connect Mac ollama with Zeus and Ada tunnel:
-	Mac terminal: ssh -N -J n_i34@zeus.cs.txstate.edu -R 11434:localhost:11434 n_i34@ada
 	
 
 
