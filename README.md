@@ -34,11 +34,25 @@ Linux command:
 #Step 2: Select a Subset (Histogram-cuda) of HeCBench Kernels
 	Linux command: cd histogram-cuda/
 				   ls
-		           make run (it will provide the GPU's best runtime)
+		           make run (it will provide the GPU's best runtime).
+				   ....................
+				   ls
+				   #To check the code of histogram-cuda/
+				   cat histogram_compare.cu // because we need to include code for CPU and Unified Memory
+				   nano histogram_compare.cu //Change the code: 3 memory configuration, such as (Host, Device, and UM) using cudaMalloc, cudaMallocHost, cudaMallocManaged
+				   Record the best runtime. 
+				   Repeat it: pick 20-50 diverse kernels. 
+				   .......................................
+
+
+
+
+
+
+
 				   
-	....
 	
-	..
+	....................................................
 	Create a Python virtual environment:
 	python3 -m venv venv
 	. venv/bin/activate
