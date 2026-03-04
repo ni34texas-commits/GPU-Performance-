@@ -1,14 +1,43 @@
-# GPU-Performance
-Login Steps:
-Terminal
-ssh username@zeus.cs.txstate.edu
-Enter Password
-ssh username@ada.cs.txstate.edu
-Enter Password
+# AI agent that recommends the best memory location for GPU programs
+Step 1: Set Up Your Environment
+	Install Cuda Toolkit: developer.nvidia.com
+	Install Python3
+	Clone: git clone https://github.com/zjin-lcf/HeCBench 
+.................
+I used the Texas State University's Ada server:
+	Login Steps:
+	Terminal
+		ssh username@zeus.cs.txstate.edu
+		Enter Password
+		ssh username@ada.cs.txstate.edu
+		Enter Password
+.......
+Linux command: 
+	#Check Nvidia Version:
+	nvcc --version
+	#Check Python3 Version installed (if not, install Python3)
+	python3 --version
+	Git Clone: git clone https://github.com/zjin-lcf/HeCBench
+
 	Linux commands: 
-    ls
-    mkdir folderName
-    cd folderName
+    cd folderName (cd ParallelCodeEstimation)
+	ls
+	Go to Folders and check what's in it:
+		 cd build
+		 ls
+		 cd .. 
+		 cd src
+		 ls
+		 cd src
+		 ls
+		 cd ..
+#Step 2: Select a Subset (Histogram-cuda) of HeCBench Kernels
+	Linux command: cd histogram-cuda/
+				   ls
+		           make run (it will provide the GPU's best runtime)
+				   
+	....
+	
 	..
 	Create a Python virtual environment:
 	python3 -m venv venv
