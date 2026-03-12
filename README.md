@@ -43,6 +43,8 @@ Linux command:
 				   Record the best runtime. 
 				   Repeat it: pick 20-50 diverse kernels. 
 				   .......................................
+#Step 3: Install Ollama and pull codellama
+	
 
 
 
