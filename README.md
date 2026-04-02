@@ -18,24 +18,12 @@ Linux command:
 	#Check Python3 Version installed (if not, install Python3)
 	python3 --version
 	Git Clone: git clone https://github.com/zjin-lcf/HeCBench
-
-	Linux commands: 
-    cd folderName (cd ParallelCodeEstimation)
-	ls
-	Go to Folders and check what's in it:
-		 cd build
-		 ls
-		 cd .. 
-		 cd src
-		 ls
-		 cd src
-		 ls
-		 cd ..
+	
 #Step 2: Select a Subset (Histogram-cuda) of HeCBench Kernels
 	Linux command: cd histogram-cuda/
 				   ls
 		           make run (it will provide the GPU's best runtime).
-				   ....................
+				   ...................................
 				   ls
 				   #To check the code of histogram-cuda/
 				   cat histogram_compare.cu // because we need to include code for CPU and Unified Memory
