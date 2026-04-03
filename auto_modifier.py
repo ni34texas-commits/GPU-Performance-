@@ -137,7 +137,7 @@ Answer briefly:
         import requests, json
         response = requests.post(
             "http://localhost:11434/api/generate",
-            json={"model": "llama3", "prompt": prompt, "stream": False},
+            json={"model": "codellama", "prompt": prompt, "stream": False},
             timeout=120
         )
         return response.json()["response"]
