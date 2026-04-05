@@ -5,7 +5,6 @@ import subprocess
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_ollama import ChatOllama
 
-# ─── CONFIG ────────────────────────────────────────────────────────────────
 SRC_BASE = os.path.expanduser("~/GPULLM/ParallelCodeEstimation/src")
 EVAL_LOG = os.path.expanduser("~/GPULLM/benchmarker/evaluation_report.txt")
 
@@ -27,7 +26,6 @@ KERNEL_CONFIGS = {
     "histogram-cuda":  ("main",       None),
 }
 
-# ─── HELPERS ───────────────────────────────────────────────────────────────
 def find_source(kernel_dir):
     for fname in ["main.cu", "stencil_1d.cu", "gaussianElim.cu", "backprop.cu"]:
         fpath = os.path.join(kernel_dir, fname)
@@ -66,11 +64,9 @@ def create_memory_versions(source_file):
     unified_code = re.sub(r'cudaMemcpy\s*\([^;]+cudaMemcpyDeviceToHost[^;]+;', '// removed', unified_code)
     return {'device': original, 'host': host_code, 'unified': unified_code}
 
-# ─── BENCHMARK ─────────────────────────────────────────────────────────────
 def benchmark_one(kernel_name):
     binary, args = KERNEL_CONFIGS[kernel_name]
     kernel_dir = os.path.join(SRC_BASE, kernel_name)
-
     if kernel_name == "histogram-cuda":
         result = subprocess.run("./main 2>&1", shell=True, cwd=kernel_dir,
                                 capture_output=True, text=True, timeout=60)
@@ -110,10 +106,8 @@ def benchmark_one(kernel_name):
             )
             val = extract_timing(run_result.stdout + run_result.stderr)
             timings[mem_type] = round(val, 3) if val else 9999.0
-
     return timings
 
-# ─── ASK CODELLAMA ─────────────────────────────────────────────────────────
 def get_agent_recommendation(kernel_name, source_code, timings):
     winner = min(timings, key=timings.get)
     llm = ChatOllama(model="codellama", base_url="http://localhost:11434", temperature=0.1)
@@ -140,18 +134,24 @@ def get_agent_recommendation(kernel_name, source_code, timings):
     return response.content, winner
 
 def extract_recommendation(agent_answer):
+    # Priority 1: look at final recommendation sentence
+    for line in reversed(agent_answer.split("\n")):
+        line_lower = line.lower()
+        if any(w in line_lower for w in ["recommend", "use", "final", "conclusion"]):
+            for mem in ["device", "unified", "host"]:
+                if mem in line_lower:
+                    return mem
+    # Priority 2: last occurrence of memory type
     answer_lower = agent_answer.lower()
-    # Check for explicit recommendation phrases
-    for mem in ["unified", "device", "host"]:
-        if f"use {mem}" in answer_lower or f"recommend {mem}" in answer_lower:
-            return mem
-    # Check for "X memory" mentions
-    for mem in ["unified", "device", "host"]:
-        if f"{mem} memory" in answer_lower:
-            return mem
-    return "unknown"
+    last_pos = -1
+    last_mem = "unknown"
+    for mem in ["device", "unified", "host"]:
+        pos = answer_lower.rfind(f"{mem} memory")
+        if pos > last_pos:
+            last_pos = pos
+            last_mem = mem
+    return last_mem
 
-# ─── MAIN EVALUATION ───────────────────────────────────────────────────────
 def run_evaluation():
     print("\n" + "="*70)
     print("  STEP 5: AGENT ACCURACY EVALUATION")
@@ -165,20 +165,16 @@ def run_evaluation():
         print("-"*50)
 
         truth = GROUND_TRUTH[kernel_name]
-
-        # Read source
         kernel_dir = os.path.join(SRC_BASE, kernel_name)
         source_file = find_source(kernel_dir)
         with open(source_file, 'r') as f:
             source_code = f.read()[:3000]
 
-        # Benchmark
         print(f"  Benchmarking...", end=" ", flush=True)
         timings = benchmark_one(kernel_name)
         measured_winner = min(timings, key=timings.get)
         print(f"done. Measured: {measured_winner.upper()}")
 
-        # Get agent recommendation
         print(f"  Asking CodeLlama...", end=" ", flush=True)
         agent_answer, _ = get_agent_recommendation(kernel_name, source_code, timings)
         agent_rec = extract_recommendation(agent_answer)
@@ -192,19 +188,13 @@ def run_evaluation():
         print(f"  Verdict      : {verdict}")
 
         results.append({
-            'kernel':       kernel_name,
-            'truth':        truth,
-            'measured':     measured_winner,
-            'agent_rec':    agent_rec,
-            'verdict':      verdict,
-            'device_us':    timings['device'],
-            'host_us':      timings['host'],
-            'unified_us':   timings['unified'],
-            'speedup':      speedup,
-            'agent_answer': agent_answer,
+            'kernel': kernel_name, 'truth': truth,
+            'measured': measured_winner, 'agent_rec': agent_rec,
+            'verdict': verdict, 'device_us': timings['device'],
+            'host_us': timings['host'], 'unified_us': timings['unified'],
+            'speedup': speedup, 'agent_answer': agent_answer,
         })
 
-    # ─── PRINT REPORT ──────────────────────────────────────────────────────
     correct = sum(1 for r in results if r['verdict'] == 'CORRECT')
     total = len(results)
     accuracy = correct / total * 100
@@ -218,7 +208,6 @@ def run_evaluation():
         icon = "✓" if r['verdict'] == 'CORRECT' else "✗"
         print(f"{r['kernel']:<20} {r['truth'].upper():<10} {r['agent_rec'].upper():<10} "
               f"{r['measured'].upper():<10} {icon} {r['verdict']:<8} {r['speedup']}x")
-
     print("-"*70)
     print(f"\nOverall Accuracy : {correct}/{total} = {accuracy:.1f}%")
     print(f"Correct          : {correct} kernels")
@@ -235,7 +224,6 @@ def run_evaluation():
         if count > 0:
             print(f"  {mem.upper():<10}: {count} kernels")
 
-    # Save report
     with open(EVAL_LOG, 'w') as f:
         f.write("STEP 5: EVALUATION REPORT\n")
         f.write("="*70 + "\n\n")
@@ -262,4 +250,3 @@ def run_evaluation():
 
 if __name__ == "__main__":
     run_evaluation()
-
