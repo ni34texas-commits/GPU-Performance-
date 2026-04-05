@@ -150,11 +150,6 @@ def analyze_with_codellama(kernel_name, source_result, benchmark_result):
         SystemMessage(content=(
             "You are an expert CUDA GPU performance engineer. "
             "Analyze the kernel source code and benchmark results. "
-            "CRITICAL RULES: "
-            "1. ALWAYS trust the benchmark measurements first. "
-            "2. The fastest measured memory type IS the correct answer. "
-            "3. Even a small speedup (1.5x) is significant. "
-            "4. Do NOT second-guess the measurements. "
             "Give a clear recommendation on which memory type to use and why."
         )),
         HumanMessage(content=(
@@ -163,7 +158,7 @@ def analyze_with_codellama(kernel_name, source_result, benchmark_result):
             f"{benchmark_result}\n\n"
             f"Based on BOTH the source code memory access patterns AND benchmark results:\n"
             f"1. Which memory type is fastest?\n"
-            f"2. Why does it perform best? (look at the code)\n"
+            f"2. Why does it perform best?\n"
             f"3. Final recommendation: Device, Host, or Unified memory?"
         ))
     ]
@@ -177,17 +172,21 @@ def run_agent(kernel_name):
     print(f"  Kernel: {kernel_name}")
     print(f"{'='*60}\n")
 
+    # Step 1: Read source code
     print("[Step 1] Reading source code...")
     source_result = read_kernel_source.invoke(kernel_name)
     print(f"  Done ({len(source_result)} chars)\n")
 
+    # Step 2: Benchmark all 3 memory types
     print("[Step 2] Benchmarking all 3 memory types...")
     benchmark_result = benchmark_kernel.invoke(kernel_name)
     print(f"  {benchmark_result}\n")
 
+    # Step 3: Ask CodeLlama to analyze
     print("[Step 3] Asking CodeLlama to analyze results...")
     answer = analyze_with_codellama(kernel_name, source_result, benchmark_result)
 
+    # Evaluate against ground truth
     truth = GROUND_TRUTH.get(kernel_name, "unknown")
     verdict = "CORRECT" if truth in answer.lower() else "WRONG"
 
