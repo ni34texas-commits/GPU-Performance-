@@ -116,47 +116,38 @@ def benchmark_one(kernel_name):
 # ─── ASK CODELLAMA ─────────────────────────────────────────────────────────
 def get_agent_recommendation(kernel_name, source_code, timings):
     winner = min(timings, key=timings.get)
-    sorted_times = sorted(timings.values())
-    speedup_2nd = round(sorted_times[1] / timings[winner], 2) if sorted_times[1] != timings[winner] else 1.0
-
     llm = ChatOllama(model="codellama", base_url="http://localhost:11434", temperature=0.1)
     messages = [
         SystemMessage(content=(
             "You are an expert CUDA GPU performance engineer. "
             "Based on the kernel source code and benchmark results, "
-            "recommend ONE memory type: Device, Host, or Unified. "
-            "CRITICAL RULES: "
-            "1. ALWAYS trust the benchmark measurements first. "
-            "2. The fastest measured memory type IS the correct answer. "
-            "3. Even a small speedup (1.5x) is significant and must be respected. "
-            "4. Do NOT second-guess the measurements. "
-            "End your response with exactly one of these lines:\n"
-            "RECOMMENDATION: DEVICE\n"
-            "RECOMMENDATION: HOST\n"
-            "RECOMMENDATION: UNIFIED"
+            "recommend the best memory type and explain why."
         )),
         HumanMessage(content=(
             f"Kernel: {kernel_name}\n\n"
             f"Source Code (first 3000 chars):\n{source_code}\n\n"
-            f"Benchmark Results (measured on real GPU hardware):\n"
+            f"Benchmark Results:\n"
             f"  Device Memory  : {timings['device']} microseconds\n"
             f"  Host Memory    : {timings['host']} microseconds\n"
             f"  Unified Memory : {timings['unified']} microseconds\n"
-            f"  MEASURED WINNER: {winner.upper()} memory ({speedup_2nd}x faster than 2nd place)\n\n"
-            f"The benchmark clearly shows {winner.upper()} is fastest. "
-            f"Explain why based on the source code, then give your recommendation."
+            f"  Measured Winner: {winner.upper()} memory\n\n"
+            f"1. Which memory type is fastest?\n"
+            f"2. Why does it perform best?\n"
+            f"3. Final recommendation: Device, Host, or Unified memory?"
         ))
     ]
     response = llm.invoke(messages)
     return response.content, winner
 
 def extract_recommendation(agent_answer):
-    match = re.search(r'RECOMMENDATION:\s*(DEVICE|HOST|UNIFIED)', agent_answer, re.IGNORECASE)
-    if match:
-        return match.group(1).lower()
     answer_lower = agent_answer.lower()
+    # Check for explicit recommendation phrases
     for mem in ["unified", "device", "host"]:
-        if f"use {mem}" in answer_lower or f"{mem} memory" in answer_lower:
+        if f"use {mem}" in answer_lower or f"recommend {mem}" in answer_lower:
+            return mem
+    # Check for "X memory" mentions
+    for mem in ["unified", "device", "host"]:
+        if f"{mem} memory" in answer_lower:
             return mem
     return "unknown"
 
@@ -271,3 +262,4 @@ def run_evaluation():
 
 if __name__ == "__main__":
     run_evaluation()
+
