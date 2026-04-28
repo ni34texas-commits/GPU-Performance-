@@ -31,7 +31,16 @@ Linux command:
 				   Record the best runtime. 
 				   Repeat it: pick 20-50 diverse kernels. 
 				   .......................................
-#Step 3: Install Ollama and pull codellama
+#Step 3: Install Ollama and pull codellama:
+How do you add the benchmarks to my ground truth database?
+The Process to Add a New Kernel
+It is a 4-step process:
+	Step 1 — Find and instrument the kernel: Example: find cluster.cu, added cudaEvent_t timing
+	Step 2 — Benchmark all 3 memory types manually: Example: ./kmeans -i /tmp/kmeans_input.txt -m 5 -n 5
+	Step 3 — Record the real timings: Example: Device=116us, Host=203us, Unified=103us → UNIFIED wins
+	Step 4 — Add to ground truth dictionary: Example: Add "kmeans-cuda": "unified" to GROUND_TRUTH
+
+
 	
 
 
