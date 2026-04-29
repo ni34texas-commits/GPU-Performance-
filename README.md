@@ -39,8 +39,9 @@ It is a 4-step process:
 	Step 2 — Benchmark all 3 memory types manually: Example: ./kmeans -i /tmp/kmeans_input.txt -m 5 -n 5
 	Step 3 — Record the real timings: Example: Device=116us, Host=203us, Unified=103us → UNIFIED wins
 	Step 4 — Add to ground truth dictionary: Example: Add "kmeans-cuda": "unified" to GROUND_TRUTH
+	...............
 
-
+Step 4: 
 	
 
 
