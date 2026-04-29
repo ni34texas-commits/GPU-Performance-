@@ -1,3 +1,5 @@
+#HIGH contention atomics + random destination = UNIFIED wins
+#LOW contention atomics + structured access   = DEVICE wins
 import os
 import re
 import sys
