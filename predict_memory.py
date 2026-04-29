@@ -191,6 +191,7 @@ def create_memory_versions(source_file):
                           '// removed', unified_code)
     return {'device': original, 'host': host_code, 'unified': unified_code}
 
+# this is just a sanity check tool: --verify
 def benchmark_to_verify(kernel_name, binary, args):
     kernel_dir = os.path.join(SRC_BASE, kernel_name)
     source_file = find_source(kernel_dir)
