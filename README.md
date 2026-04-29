@@ -1,4 +1,4 @@
-# AI agent that recommends the best memory location for GPU programs
+# AI agent that recommends the best memory types for a given CUDA kernel
 Step 1: Set Up Your Environment
 	Install Cuda Toolkit: developer.nvidia.com
 	Install Python3
